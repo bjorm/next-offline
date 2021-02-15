@@ -1,8 +1,9 @@
 const { GenerateSW, InjectManifest } = require('workbox-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const { readFile, writeFile } = require('fs-extra');
+const { readFile, writeFile, mkdtempSync } = require('fs-extra');
 const { join } = require('path');
 const { cwd } = require('process');
+const os = require('os');
 
 const exportSw = require('./export');
 
@@ -85,7 +86,8 @@ module.exports = (nextConfig = {}) => ({
       const originalEntry = config.entry;
       config.entry = async () => {
         const entries = await originalEntry();
-        const swCompiledPath = join(__dirname, 'register-sw-compiled.js');
+        const tempFolder = mkdtempSync(join(os.tmpdir(), 'next-offline-'));
+        const swCompiledPath = join(tempFolder, 'register-sw-compiled.js');
         // See https://github.com/zeit/next.js/blob/canary/examples/with-polyfills/next.config.js for a reference on how to add new entrypoints
         if (
           entries['main.js'] &&
